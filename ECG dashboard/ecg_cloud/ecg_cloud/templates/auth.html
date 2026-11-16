@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CardioWatch – Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head><body>
+<div class="auth-wrap">
+  <section class="hero">
+    <div class="brand"><span class="logo">♥</span> CardioWatch</div>
+    <h1>Heart monitoring that <span>keeps families connected.</span></h1>
+    <p>A portable ECG patch streams live heart activity to the cloud. Guardians see it in real time and get an SMS the moment an abnormal rhythm is detected.</p>
+    <svg class="ecg-line" viewBox="0 0 520 90" preserveAspectRatio="none"><path id="ecgPath"/></svg>
+    <div class="feats">
+      <div><b>Live ECG</b> waveform, heart rate and battery</div>
+      <div><b>Guardian access</b> with patient ID and relation</div>
+      <div><b>Instant alerts</b> by SMS and on the dashboard</div>
+    </div>
+  </section>
+  <section class="auth-side"><div class="auth-card">
+    <div class="tabs">
+      <button data-tab="login" class="active">Login</button>
+      <button data-tab="patient">Patient sign up</button>
+      <button data-tab="guardian">Guardian sign up</button>
+    </div>
+
+    <form id="login">
+      <label>I am a</label>
+      <div class="seg">
+        <label><input type="radio" name="role" value="patient" checked><span>Patient</span></label>
+        <label><input type="radio" name="role" value="guardian"><span>Guardian</span></label>
+      </div>
+      <label>Mobile number</label><input name="mobile" inputmode="numeric" placeholder="10-digit mobile" required>
+      <label>Password</label><input name="password" type="password" required>
+      <button class="btn" type="submit">Log in</button>
+    </form>
+
+    <form id="patient" hidden>
+      <label>Full name</label><input name="name" required>
+      <div class="row2">
+        <div><label>Age</label><input name="age" type="number" min="1" max="120" required></div>
+        <div><label>Mobile number</label><input name="mobile" inputmode="numeric" placeholder="10-digit" required></div>
+      </div>
+      <label>Email (optional)</label><input name="email" type="email">
+      <label>Password (min 6 characters)</label><input name="password" type="password" minlength="6" required>
+      <button class="btn" type="submit">Create patient account</button>
+    </form>
+
+    <form id="guardian" hidden>
+      <label>Your name</label><input name="name" required>
+      <label>Your mobile number (alerts are sent here)</label><input name="mobile" inputmode="numeric" placeholder="10-digit mobile" required>
+      <div class="row2">
+        <div><label>Patient ID</label><input name="patient_code" placeholder="ECG1234" required></div>
+        <div><label>Relation</label>
+          <select name="relation" required><option value="" disabled selected>Select</option>
+            <option>Father</option><option>Mother</option><option>Spouse</option><option>Son</option>
+            <option>Daughter</option><option>Brother</option><option>Sister</option><option>Other</option></select></div>
+      </div>
+      <label>Password (min 6 characters)</label><input name="password" type="password" minlength="6" required>
+      <button class="btn" type="submit">Create guardian account</button>
+    </form>
+
+    <div id="done" class="done" hidden>
+      <h2>Account created</h2>
+      <div class="pid" id="pid"></div>
+      <p>This is your <b>Patient ID</b>. Give it to your guardian – they need it, with their mobile number, to register and view your data.</p>
+      <button class="btn" id="go" style="margin-top:18px">Go to dashboard</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div></section>
+</div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s), msg=$('#msg');
+// decorative ECG line
+(function(){let d='M0 45',x=0;for(let i=0;i<4;i++){d+=` L${x+30} 45 L${x+38} 40 L${x+46} 45 L${x+58} 45 L${x+64} 55 L${x+72} 8 L${x+80} 82 L${x+86} 45 L${x+104} 45 L${x+116} 33 L${x+130} 45`;x+=130}
+$('#ecgPath').setAttribute('d',d)})();
+$$('.tabs button').forEach(b=>b.onclick=()=>{
+  $$('.tabs button').forEach(x=>x.classList.toggle('active',x===b));
+  $$('form').forEach(f=>f.hidden=f.id!==b.dataset.tab);
+  $('#done').hidden=true; msg.textContent='';
+});
+async function send(url,form){
+  const btn=form.querySelector('button[type=submit]'); btn.disabled=true; msg.textContent='';
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});
+    const j=await r.json(); if(!r.ok) throw new Error(j.error||'Something went wrong'); return j;
+  }catch(e){msg.textContent=e.message;return null}finally{btn.disabled=false}
+}
+$('#login').onsubmit=async e=>{e.preventDefault();if(await send('/api/login',e.target))location='/dashboard'};
+$('#guardian').onsubmit=async e=>{e.preventDefault();if(await send('/api/register/guardian',e.target))location='/dashboard'};
+$('#patient').onsubmit=async e=>{e.preventDefault();const j=await send('/api/register/patient',e.target);
+  if(j){$$('form,.tabs').forEach(f=>f.hidden=true);$('#pid').textContent=j.patient_code;$('#done').hidden=false}};
+$('#go').onclick=()=>location='/dashboard';
+</script>
+</body></html>

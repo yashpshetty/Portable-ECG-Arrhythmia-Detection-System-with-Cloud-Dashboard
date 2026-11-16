@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CardioWatch – Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head><body>
+<header class="top">
+  <div class="brand"><span class="logo">♥</span> CardioWatch</div>
+  <div class="top-right">
+    <select id="patientSel" title="Patient"></select>
+    <div class="user"><b>{{ name }}</b><small>{{ role }}</small></div>
+    <button id="logout" class="btn ghost">Logout</button>
+  </div>
+</header>
+<div id="toast" class="toast" hidden></div>
+
+<main class="grid">
+  <section class="card stat"><h3>Heart rate</h3>
+    <div class="big"><span class="heart">♥</span><span id="bpm">--</span><small>BPM</small></div></section>
+  <section class="card stat"><h3>Rhythm</h3><div id="rhythm" class="big sm">--</div></section>
+  <section class="card stat"><h3>Patch battery</h3>
+    <div class="big"><span id="batt">--</span><small>%</small></div><div class="bar"><div id="battBar"></div></div></section>
+  <section class="card stat"><h3>Connections</h3>
+    <div class="chips">
+      <div class="chip" id="chipPatch"><i></i>ECG patch<span id="patchTxt">offline</span></div>
+      <div class="chip" id="chipCloud"><i></i>Cloud link<span id="cloudTxt">connecting…</span></div>
+      <div class="chip" id="chipData"><i></i>Live data<span id="seenTxt">no data</span></div>
+    </div></section>
+
+  <section class="card monitor"><h3>Live ECG <span>360 Hz · filtered</span></h3>
+    <div class="screen"><canvas id="ecg"></canvas></div>
+    <div id="refNote" class="ref" hidden><b>Hospital reference:</b> <span id="refText"></span></div></section>
+  <section class="card alerts"><h3>Alerts</h3><div id="alerts" class="alist"></div></section>
+
+  <section class="card chart"><h3>Last 7 days <span>avg heart rate &amp; abnormal events</span></h3>
+    <div class="box"><canvas id="bars"></canvas></div></section>
+  <section class="card info"><h3>Patient details</h3><dl class="kv" id="details"></dl></section>
+</main>
+
+<script>window.APP = {{ cfg|tojson }};</script>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.4/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="/static/js/dashboard.js"></script>
+</body></html>
